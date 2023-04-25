@@ -1,0 +1,36 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+---
+name: spack
+version: 0.19.2
+base: core22
+adopt-info: spack
+summary: A flexible package manager that supports multiple configurations.
+description: |
+  Spack is a multi-platform package manager that builds and installs multiple
+   versions and configurations of software. It works on Linux, macOS, and many
+   supercomputers. Spack is non-destructive: installing a new version of a
+   package does not break existing installations, so many configurations of the
+   same package can coexist.
+
+  Spack offers a simple "spec" syntax that allows users to specify versions and
+   configuration options. Package files are written in pure Python, and specs
+   allow package authors to write a single script for many different builds of
+   the same package. With Spack, you can build your software all the ways you
+   want to.
+license: Apache-2.0
+website: https://spack.io/
+grade: stable
+confinement: strict
+
+apps:
+  spack:
+    command: bin/spack
+    plugs:
+      - network
+
+parts:
+  spack:
+    plugin: dump
+    source: >-
+      https://github.com/spack/spack/releases/download/v$SNAPCRAFT_PROJECT_VERSION/spack-$SNAPCRAFT_PROJECT_VERSION.tar.gz
