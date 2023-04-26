@@ -2,6 +2,8 @@
 # See LICENSE file for licensing details.
 ---
 name: spack
+title: Spack
+icon: data/spack-logo.svg
 version: 0.19.2
 base: core22
 adopt-info: spack
