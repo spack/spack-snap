@@ -3,8 +3,6 @@
 set -ex
 
 # Copy Spack Config
-# - $SNAP_COMMON/config.yaml       <-- typically /var/snap/spack/common/config.yaml
-# env; cp $SNAP/config.yaml $SNAP_COMMON/config.yaml
 SPACK=/opt/$SNAP_NAME
 
  if [ ! -d "$SPACK" ]; then
@@ -17,6 +15,5 @@ cp $SNAP/etc/spack/defaults/config.yaml $SPACK/config.yaml
 cp $SNAP/etc/spack/defaults/modules.yaml $SPACK/modules.yaml
 
 # Update to use $SNAP_USER_COMMON
-# TODO: Make it so $SNAP_USER_COMMON is /home/user/snap/spack/common instead of current /root/snap/spack/common
 sed -i 's@\$spack@'"\${SNAP_USER_COMMON}"'@g' $SPACK/config.yaml
 sed -i 's@\$spack@'"\${SNAP_USER_COMMON}"'@g' $SPACK/modules.yaml
