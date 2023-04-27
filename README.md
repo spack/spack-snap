@@ -1,4 +1,4 @@
-# GLAuth Snap
+# Spack Snap
 This repository contains the packaging metadata for creating a snap of Spack.  For more information on snaps, visit [snapcraft.io](https://snapcraft.io/). 
 
 ## Installing the Snap
@@ -25,10 +25,17 @@ sudo lxd init --auto
 ### Packing and Installing the Snap
 ```bash
 snapcraft pack
-sudo snap install ./spack*.charm --devmode
+sudo snap install ./spack*.charm --dangerous --classic
 ```
 ## How to Use the Snap
+```bash
+# Install a package
+spack install <package_name>
 
+# Uninstall a package
+spack uninstall <package_name>
+```
 
+For more on usage, see [Usage](https://spack.readthedocs.io/en/latest/basic_usage.html) for more information.
 ## License
-The Spack Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/dvdgomez/glauth-snap/blob/main/LICENSE) for more information.
+The Spack Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/dvdgomez/spack-snap/blob/main/LICENSE) for more information.
