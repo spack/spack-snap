@@ -9,7 +9,7 @@ SPACK=/opt/$SNAP_NAME
 
  if [ ! -d "$SPACK" ]; then
     mkdir $SPACK
-    chmod 777 $SPACK
+    chmod 755 $SPACK
 fi
 
 # Copy over Spack configs
