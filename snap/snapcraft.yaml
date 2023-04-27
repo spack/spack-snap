@@ -23,12 +23,15 @@ description: |
 license: Apache-2.0
 website: https://spack.io/
 grade: stable
-confinement: strict
+confinement: classic
 
 apps:
   spack:
     command: bin/spack
+    environment:
+      SPACK_USER_CONFIG_PATH: $SNAP_COMMON
     plugs:
+      - home
       - network
 
 parts:
@@ -36,3 +39,6 @@ parts:
     plugin: dump
     source: >-
       https://github.com/spack/spack/releases/download/v$SNAPCRAFT_PROJECT_VERSION/spack-$SNAPCRAFT_PROJECT_VERSION.tar.gz
+    override-prime:
+      snapcraftctl prime
+      cp $CRAFT_PART_SRC_WORK/etc/spack/defaults/config.yaml $CRAFT_PART_INSTALL/config.yaml
