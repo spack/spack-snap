@@ -7,7 +7,6 @@ import logging
 import os
 import pathlib
 import re
-import shlex
 import subprocess
 import unittest
 
@@ -20,18 +19,13 @@ class TestSnap(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Test class setup."""
-        subprocess.run(shlex.split("tox -e clean"))
+        subprocess.run(["tox", "-e", "clean"])
         logger.info("Building snap")
         # Go up 3 levels from test file
         os.chdir("/".join(__file__.split("/")[:-3]))
-        subprocess.run(shlex.split("tox -e snap"))
+        subprocess.run(["tox", "-e", "snap"])
         # Find generated snap
         cls.SPACK = re.findall(r"(spack.*?snap)", " ".join(os.listdir()))[0]
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        """Test class teardown."""
-        subprocess.run(shlex.split("tox -e clean"))
 
     def test_build(self):
         """Test snap build status."""
@@ -41,10 +35,10 @@ class TestSnap(unittest.TestCase):
     def test_install(self):
         """Test snap install status."""
         logger.info(f"Installing spack snap {TestSnap.SPACK}...")
-        subprocess.run(shlex.split("tox -e install"))
+        subprocess.run(["tox", "-e", "install"])
         logger.info("Finished spack snap install!")
         source = subprocess.run(
-            shlex.split("snap list spack"), stdout=subprocess.PIPE, text=True
+            ["snap", "list", "spack"], stdout=subprocess.PIPE, text=True
         ).stdout.strip("\n")
         self.assertTrue("spack" in source)
 
@@ -52,12 +46,17 @@ class TestSnap(unittest.TestCase):
         """Test Spack install."""
         logger.info("Testing Spack install...")
         install = subprocess.run(
-            shlex.split("spack install zlib"), stdout=subprocess.PIPE, text=True
+            ["spack", "install", "zlib"], stdout=subprocess.PIPE, text=True
         ).stdout.strip("\n")
         self.assertTrue("Successfully installed zlib" in install)
         logger.info("Testing Spack uninstall...")
         # force used to skip confirmation y/N
         uninstall = subprocess.run(
-            shlex.split("spack uninstall zlib"), input="y", stdout=subprocess.PIPE, text=True
+            ["spack", "uninstall", "zlib"], input="y", stdout=subprocess.PIPE, text=True
         ).stdout.strip("\n")
         self.assertTrue("Successfully uninstalled zlib" in uninstall)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Test class teardown."""
+        subprocess.run(["tox", "-e", "clean"])
