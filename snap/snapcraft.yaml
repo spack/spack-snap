@@ -29,7 +29,7 @@ apps:
   spack:
     command: bin/spack
     environment:
-      SPACK_USER_CONFIG_PATH: $SNAP_COMMON
+      SPACK_USER_CONFIG_PATH: /opt/spack
     plugs:
       - home
       - network
@@ -42,3 +42,4 @@ parts:
     override-prime:
       snapcraftctl prime
       cp $CRAFT_PART_SRC_WORK/etc/spack/defaults/config.yaml $CRAFT_PART_INSTALL/config.yaml
+      cp $CRAFT_PART_SRC_WORK/etc/spack/defaults/modules.yaml $CRAFT_PART_INSTALL/modules.yaml

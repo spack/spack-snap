@@ -2,12 +2,21 @@
 
 set -ex
 
-# mkdir $SNAP/opt
-
 # Copy Spack Config
-#cp $SNAP/config.yaml $SNAP_USER_COMMON/config.yaml
-cp $SNAP/etc/spack/defaults/config.yaml $SNAP_COMMON/config.yaml
+# - $SNAP_COMMON/config.yaml       <-- typically /var/snap/spack/common/config.yaml
+# env; cp $SNAP/config.yaml $SNAP_COMMON/config.yaml
+SPACK=/opt/$SNAP_NAME
 
-# Update to change install directory
+ if [ ! -d "$SPACK" ]; then
+    mkdir $SPACK
+    chmod 777 $SPACK
+fi
+
+# Copy over Spack configs
+cp $SNAP/etc/spack/defaults/config.yaml $SPACK/config.yaml
+cp $SNAP/etc/spack/defaults/modules.yaml $SPACK/modules.yaml
+
+# Update to use $SNAP_USER_COMMON
 # TODO: Make it so $SNAP_USER_COMMON is /home/user/snap/spack/common instead of current /root/snap/spack/common
-sed -i 's@root: \$spack/opt/spack@root: '"$SNAP_USER_COMMON"'@g' $SNAP_COMMON/config.yaml
+sed -i 's@\$spack@'"\${SNAP_USER_COMMON}"'@g' $SPACK/config.yaml
+sed -i 's@\$spack@'"\${SNAP_USER_COMMON}"'@g' $SPACK/modules.yaml
