@@ -47,3 +47,17 @@ class TestSnap(unittest.TestCase):
             shlex.split("snap list spack"), stdout=subprocess.PIPE, text=True
         ).stdout.strip("\n")
         self.assertTrue("spack" in source)
+
+    def test_spack_install(self):
+        """Test Spack install."""
+        logger.info("Testing Spack install...")
+        install = subprocess.run(
+            shlex.split("spack install zlib"), stdout=subprocess.PIPE, text=True
+        ).stdout.strip("\n")
+        self.assertTrue("Successfully installed zlib" in install)
+        logger.info("Testing Spack uninstall...")
+        # force used to skip confirmation y/N
+        uninstall = subprocess.run(
+            shlex.split("spack uninstall zlib"), input="y", stdout=subprocess.PIPE, text=True
+        ).stdout.strip("\n")
+        self.assertTrue("Successfully uninstalled zlib" in uninstall)
