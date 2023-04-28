@@ -46,15 +46,27 @@ class TestSnap(unittest.TestCase):
         """Test Spack install."""
         logger.info("Testing Spack install...")
         install = subprocess.run(
-            ["spack", "install", "zlib"], stdout=subprocess.PIPE, text=True
+            ["sudo", "spack", "install", "zlib"], stdout=subprocess.PIPE, text=True
         ).stdout.strip("\n")
         self.assertTrue("Successfully installed zlib" in install)
-        logger.info("Testing Spack uninstall...")
-        # force used to skip confirmation y/N
-        uninstall = subprocess.run(
-            ["spack", "uninstall", "zlib"], input="y", stdout=subprocess.PIPE, text=True
+        logger.info("Testing Spack find...")
+        find = subprocess.run(
+            ["spack", "find", "zlib"], stdout=subprocess.PIPE, text=True
         ).stdout.strip("\n")
-        self.assertTrue("Successfully uninstalled zlib" in uninstall)
+        self.assertTrue("zlib@" in find)
+
+    def test_spack_uninstall(self):
+        """Test Spack uninstall."""
+        logger.info("Testing Spack uninstall...")
+        find = subprocess.run(
+            ["sudo", "spack", "uninstall", "zlib"], input="y", stdout=subprocess.PIPE, text=True
+        ).stdout.strip("\n")
+        self.assertTrue("Successfully uninstalled zlib" in find)
+        logger.info("Testing Spack find...")
+        find = subprocess.run(
+            ["spack", "find", "zlib"], stdout=subprocess.PIPE, text=True
+        ).stdout.strip("\n")
+        self.assertTrue("No package matches the query: zlib" in find)
 
     @classmethod
     def tearDownClass(cls) -> None:

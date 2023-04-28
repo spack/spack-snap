@@ -32,7 +32,7 @@ apps:
   spack:
     command: bin/spack
     environment:
-      SPACK_USER_CONFIG_PATH: /opt/spack
+      SPACK_SYSTEM_CONFIG_PATH: /opt/spack
 
 parts:
   spack:
