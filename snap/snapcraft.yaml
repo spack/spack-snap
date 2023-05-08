@@ -39,3 +39,18 @@ parts:
     plugin: dump
     source: >-
       https://github.com/spack/spack/releases/download/v$SNAPCRAFT_PROJECT_VERSION/spack-$SNAPCRAFT_PROJECT_VERSION.tar.gz
+    stage-packages:
+      - build-essential
+      - ca-certificates
+      - coreutils
+      - curl
+      - environment-modules
+      - gfortran
+      - git
+      - gpg
+      - lsb-release
+      - python3
+      - python3-distutils
+      - python3-venv
+      - unzip
+      - zip
