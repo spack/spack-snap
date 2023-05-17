@@ -36,9 +36,6 @@ sudo spack install <package_name>
 
 # Uninstall a package
 sudo spack uninstall <package_name>
-
-# Load a package
-eval `spack load --sh <package_name>`
 ```
 
 ### Modules
@@ -70,7 +67,11 @@ module list
 For more on Spack usage, see [Spack Usage](https://spack.readthedocs.io/en/latest/basic_usage.html) for more information.
 For more on lmod usage, see [Lmod Usage](https://lmod.readthedocs.io/en/latest/010_user.html) for more information.
 ## Limitations
-Currently shell support is not possible with the Spack snap. Therefore, instead of `spack load <package_name>` the shell type has to be specified in the load flag as seen above, ie --sh. This is true for other commands that rely on shell support. It is recommended to instead use modules with the Spack snap instead.
+Currently shell support is not supported with the Spack snap. Therefore, instead of `spack load <package_name>` the shell type has to be specified in the load flag as seen below, ie --sh. This is true for other commands that rely on shell support. It is recommended to instead use modules with the Spack snap instead.
 
+```bash
+# Load a package
+eval `spack load --sh <package_name>`
+```
 ## License
 The Spack Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/dvdgomez/spack-snap/blob/main/LICENSE) for more information.

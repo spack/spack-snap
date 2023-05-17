@@ -23,16 +23,18 @@ license: Apache-2.0
 website: https://spack.io/
 base: core22
 grade: stable
-confinement: classic
+confinement: strict
 compression: lzo
 
 architectures:
   - build-on: amd64
+
 apps:
   spack:
-    command: bin/spack
+    command: spack-wrapper
     environment:
-      SPACK_SYSTEM_CONFIG_PATH: /opt/spack
+      SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
+      MODULEPATH: $SNAP_USER_COMMON/share/spack/modules
 
 parts:
   spack:
@@ -42,6 +44,7 @@ parts:
     stage-packages:
       - build-essential
       - ca-certificates
+      - gringo
       - coreutils
       - curl
       - environment-modules
@@ -54,3 +57,9 @@ parts:
       - python3-venv
       - unzip
       - zip
+    
+  spack-wrapper:
+    plugin: dump
+    source: .
+    stage:
+      - spack-wrapper

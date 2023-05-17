@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Copy Spack Config
+SPACK=$SNAP_USER_COMMON
+
+#if [ ! -d "$SPACK" ]; then
+#    mkdir $SPACK
+#    chmod 755 $SPACK
+#fi
+
+# Copy over Spack configs
+if [ ! -f $SPACK/config.yaml ]; then
+    cp $SNAP/etc/spack/defaults/config.yaml $SPACK/config.yaml
+    # Update default configs
+    sed -i 's@root: \$spack/opt/spack@root: '"${SPACK}"'@g' $SPACK/config.yaml
+    sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/config.yaml
+fi 
+
+if [ ! -f $SPACK/modules.yaml ]; then
+    cp $SNAP/etc/spack/defaults/modules.yaml $SPACK/modules.yaml
+    sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/modules.yaml
+fi
+
+"$SNAP/bin/spack" "$@"
