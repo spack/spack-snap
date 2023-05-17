@@ -41,6 +41,17 @@ parts:
     plugin: dump
     source: >-
       https://github.com/spack/spack/releases/download/v$SNAPCRAFT_PROJECT_VERSION/spack-$SNAPCRAFT_PROJECT_VERSION.tar.gz
+    organize:
+      ./*: spack/
+
+  spack-wrapper:
+    plugin: dump
+    source: .
+    stage:
+      - spack-wrapper
+
+  reqs:
+    plugin: nil
     stage-packages:
       - build-essential
       - ca-certificates
@@ -57,9 +68,6 @@ parts:
       - python3-venv
       - unzip
       - zip
-    
-  spack-wrapper:
-    plugin: dump
-    source: .
-    stage:
-      - spack-wrapper
+    organize:
+      ./*: bin/
+
