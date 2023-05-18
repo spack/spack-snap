@@ -33,6 +33,7 @@ apps:
   spack:
     command: spack-wrapper
     environment:
+      PATH: $SNAP/bin/usr/bin:$SNAP/bin/usr/lib:$PATH
       SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
       MODULEPATH: $SNAP_USER_COMMON/share/spack/modules
 
@@ -55,7 +56,6 @@ parts:
     stage-packages:
       - build-essential
       - ca-certificates
-      - gringo
       - coreutils
       - curl
       - environment-modules
@@ -70,4 +70,10 @@ parts:
       - zip
     organize:
       ./*: bin/
+
+  clingo:
+    source: .
+    plugin: python
+    python-packages:
+      - clingo
 
