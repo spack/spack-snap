@@ -4,7 +4,7 @@
 name: spack
 title: Spack
 icon: data/spack-logo.svg
-version: 0.19.2
+version: 0.20.0
 adopt-info: spack
 summary: A flexible package manager that supports multiple configurations.
 description: |
@@ -29,11 +29,20 @@ compression: lzo
 architectures:
   - build-on: amd64
 
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a
+
 apps:
   spack:
+    plugs:
+      - network
     command: spack-wrapper
     environment:
-      PATH: $SNAP/bin/usr/bin:$SNAP/bin/usr/lib:$PATH
+      LD_LIBRARY_PATH: $SNAP/bin/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+      PATH: $SNAP/bin/usr/bin:$SNAP/bin/usr/lib:$SNAP/bin/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$PATH
       SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
       MODULEPATH: $SNAP_USER_COMMON/share/spack/modules
 
@@ -76,4 +85,3 @@ parts:
     plugin: python
     python-packages:
       - clingo
-
