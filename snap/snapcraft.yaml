@@ -30,10 +30,21 @@ architectures:
   - build-on: amd64
 
 layout:
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23:
-    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a:
-    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a
+  /usr/include:
+    bind: $SNAP/usr/include
+  # uncommenting this causes the wrapper to fail
+  #/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:
+  #  bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+  # Can either link all of these and more or just add $SNAP/usr/lib/x86_64-linux-gnu 
+  # to compilers.yaml is enough
+  #/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23:
+  #  symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23
+  #/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpc.so.3:
+  #  symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpc.so.3
+  #/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpfr.so.6:
+  #  symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpfr.so.6
+  #/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a:
+  #  bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a
 
 apps:
   spack:
@@ -41,8 +52,8 @@ apps:
       - network
     command: spack-wrapper
     environment:
-      LD_LIBRARY_PATH: $SNAP/bin/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
-      PATH: $SNAP/bin/usr/bin:$SNAP/bin/usr/lib:$SNAP/bin/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$PATH
+      # LD_LIBRARY_PATH: $SNAP/bin/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+      # PATH: $SNAP/bin/usr/bin:$SNAP/bin/usr/lib:$SNAP/bin/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$PATH
       SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
       MODULEPATH: $SNAP_USER_COMMON/share/spack/modules
 
@@ -71,14 +82,15 @@ parts:
       - gfortran
       - git
       - gpg
+      - libc6-dev
       - lsb-release
       - python3
       - python3-distutils
       - python3-venv
       - unzip
       - zip
-    organize:
-      ./*: bin/
+    # organize:
+    #  ./*: bin/
 
   clingo:
     source: .
