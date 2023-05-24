@@ -21,4 +21,9 @@ if [ ! -f $SPACK/modules.yaml ]; then
     sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/modules.yaml
 fi
 
+if [ ! -f $SPACK/packages.yaml ]; then
+    cp $SNAP/spack/etc/spack/defaults/packages.yaml $SPACK/packages.yaml
+    sed -i 's@write: user@write: user\n      group: '"${USER}"'@g' $SPACK/packages.yaml
+fi
+
 "$SNAP/spack/bin/spack" "$@"
