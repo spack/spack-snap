@@ -3,11 +3,6 @@
 # Copy Spack Config
 SPACK=$SNAP_USER_COMMON
 
-#if [ ! -d "$SPACK" ]; then
-#    mkdir $SPACK
-#    chmod 755 $SPACK
-#fi
-
 # Copy over Spack configs
 if [ ! -f $SPACK/config.yaml ]; then
     cp $SNAP/spack/etc/spack/defaults/config.yaml $SPACK/config.yaml
@@ -18,12 +13,8 @@ fi
 
 if [ ! -f $SPACK/modules.yaml ]; then
     cp $SNAP/spack/etc/spack/defaults/modules.yaml $SPACK/modules.yaml
+    # Modules point to Spack root
     sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/modules.yaml
-fi
-
-if [ ! -f $SPACK/packages.yaml ]; then
-    cp $SNAP/spack/etc/spack/defaults/packages.yaml $SPACK/packages.yaml
-    sed -i 's@write: user@write: user\n      group: '"${USER}"'@g' $SPACK/packages.yaml
 fi
 
 "$SNAP/spack/bin/spack" "$@"
