@@ -17,4 +17,25 @@ if [ ! -f $SPACK/modules.yaml ]; then
     sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/modules.yaml
 fi
 
+if [ ! -f $SPACK/compilers.yaml ]; then
+    cat <<EOF >> $SPACK/compilers.yaml
+    compilers:
+    - compiler:
+        spec: gcc@11.3.0
+        paths:
+          cc: $SNAP/usr/bin/gcc-11
+          cxx: $SNAP/usr/bin/g++-11
+          f77: null
+          fc: null
+        flags: {}
+        operating_system: ubuntu_core22
+        target: x86_64
+        modules: []
+        environment:
+          prepend_path:
+            LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAP_ARCH_TRIPLET
+        extra_rpaths: []
+EOF
+fi
+
 "$SNAP/spack/bin/spack" "$@"
