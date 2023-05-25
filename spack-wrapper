@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Copy Spack Config
+# Spack Root Config
 SPACK=$SNAP_USER_COMMON
+
+# If MODULEPATH not set or null, assign
+MODULEPATH="${MODULEPATH:=$SPACK/share/spack/lmod/$SNAP_ARCH_TRIPLET/Core}"
 
 # Copy over Spack configs
 if [ ! -f $SPACK/config.yaml ]; then
@@ -15,6 +18,10 @@ if [ ! -f $SPACK/modules.yaml ]; then
     cp $SNAP/spack/etc/spack/defaults/modules.yaml $SPACK/modules.yaml
     # Modules point to Spack root
     sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/modules.yaml
+    # Enable module generation
+    sed -i 's@enable: \[\]@enable:\n      - lmod@g' $SPACK/modules.yaml
+    # Sync modules config to compiler
+    sed -i -z "s@lmod:@lmod:\n      core_compilers:\n        - 'gcc\@11.3.0'@2" $SPACK/modules.yaml
 fi
 
 if [ ! -f $SPACK/compilers.yaml ]; then

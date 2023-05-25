@@ -45,7 +45,6 @@ apps:
     environment:
       SNAP_ARCH_TRIPLET: $SNAPCRAFT_ARCH_TRIPLET
       SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
-      MODULEPATH: $SNAP_USER_COMMON/share/spack/modules
 
 parts:
   spack:
