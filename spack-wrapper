@@ -32,8 +32,8 @@ if [ ! -f $SPACK/compilers.yaml ]; then
         paths:
           cc: $SNAP/usr/bin/gcc-11
           cxx: $SNAP/usr/bin/g++-11
-          f77: null
-          fc: null
+          f77: $SNAP/usr/bin/gfortran
+          fc: $SNAP/usr/bin/gfortran
         flags: {}
         operating_system: ubuntu_core22
         target: x86_64
