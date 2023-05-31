@@ -25,17 +25,17 @@ sudo lxd init --auto
 ### Packing and Installing the Snap
 ```bash
 snapcraft pack
-sudo snap install ./spack*.charm --dangerous --classic
+sudo snap install ./spack*.charm --dangerous
 ```
 ## How to Use the Snap
 Currently the snap can be used for installing and loading packages.
 
 ```bash
 # Install a package
-sudo spack install <package_name>
+spack install <package_name>
 
 # Uninstall a package
-sudo spack uninstall <package_name>
+spack uninstall <package_name>
 ```
 
 ### Modules
@@ -44,13 +44,11 @@ For every package that Spack installs it also provides a module file which can b
 
 ```bash
 # Install lmod - may need additional specifiers like %gcc@11.3.0
-sudo spack install lmod
+spack install lmod
 
 # Put lmod in path
-. $(sudo spack location -i lmod)/lmod/lmod/init/bash
+. $(spack location -i lmod)/lmod/lmod/init/bash
 
-# Set MODULEPATH
-export MODULEPATH=/var/snap/spack/common/share/spack/modules
 # Should match the snap shell environment
 snap run --shell spack; env | grep MODULEPATH
 
