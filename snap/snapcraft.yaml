@@ -36,6 +36,22 @@ layout:
     bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm.a:
     bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm-2.35.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm-2.35.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmvec.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmvec.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpc.so.3:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpc.so.3
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpfr.so.6:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpfr.so.6
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libopcodes-2.38-system.so:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libopcodes-2.38-system.so
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libbfd-2.38-system.so:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libbfd-2.38-system.so
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libctf.so.0:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libctf.so.0
 
 apps:
   spack:
@@ -43,6 +59,7 @@ apps:
       - network
     command: spack-wrapper
     environment:
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
       SNAP_ARCH_TRIPLET: $SNAPCRAFT_ARCH_TRIPLET
       SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
 
