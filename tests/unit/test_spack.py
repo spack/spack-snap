@@ -4,7 +4,6 @@
 """Test minimal snap."""
 
 import logging
-import os
 import pathlib
 import re
 import subprocess
@@ -21,20 +20,23 @@ class TestSnap(unittest.TestCase):
         """Test class setup."""
         subprocess.run(["tox", "-e", "clean"])
         logger.info("Building snap")
-        # Go up 3 levels from test file
-        os.chdir("/".join(__file__.split("/")[:-3]))
         subprocess.run(["tox", "-e", "snap"])
-        # Find generated snap
-        cls.SPACK = re.findall(r"(spack.*?snap)", " ".join(os.listdir()))[0]
 
     def test_build(self):
         """Test snap build status."""
-        logger.info(f"Checking for snap {TestSnap.SPACK}...")
-        self.assertTrue(pathlib.Path(TestSnap.SPACK).exists())
+        snap = subprocess.run(
+            ["tox", "-e", "check"], stdout=subprocess.PIPE, text=True
+        ).stdout.split("\n")
+        ansi_escape = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]")
+        # location differs between local and git runner
+        snap_git = ansi_escape.sub("", snap[1])
+        snap_local = ansi_escape.sub("", snap[2])
+        logger.info("Checking for snap...")
+        self.assertTrue(pathlib.Path(snap_local).exists() or pathlib.Path(snap_git).exists())
 
     def test_install(self):
         """Test snap install status."""
-        logger.info(f"Installing spack snap {TestSnap.SPACK}...")
+        logger.info("Installing spack snap...")
         subprocess.run(["tox", "-e", "install"])
         logger.info("Finished spack snap install!")
         source = subprocess.run(
