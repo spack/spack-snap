@@ -6,7 +6,8 @@ SPACK=$SNAP_USER_COMMON
 # If MODULEPATH not set or null, assign
 MODULEPATH="${MODULEPATH:=$SPACK/share/spack/lmod/$SNAP_ARCH_TRIPLET/Core}"
 
-# Copy over Spack configs
+# Copy over default Spack configs to customize the Spack configuration.
+# Default configs of Spack will not work for the snap have to edit. 
 if [ ! -f $SPACK/config.yaml ]; then
     cp $SNAP/spack/etc/spack/defaults/config.yaml $SPACK/config.yaml
     # Update default configs
@@ -24,6 +25,7 @@ if [ ! -f $SPACK/modules.yaml ]; then
     sed -i -z "s@lmod:@lmod:\n      core_compilers:\n        - 'gcc\@11.3.0'@2" $SPACK/modules.yaml
 fi
 
+# No default compilers config exists in the upstream so need to write from scratch
 if [ ! -f $SPACK/compilers.yaml ]; then
     cat <<EOF >> $SPACK/compilers.yaml
     compilers:

@@ -22,12 +22,9 @@ description: |
 license: Apache-2.0
 website: https://spack.io/
 base: core22
-grade: stable
+grade: devel
 confinement: strict
 compression: lzo
-
-architectures:
-  - build-on: amd64
 
 layout:
   /usr/include:
@@ -77,6 +74,8 @@ parts:
     organize:
       ./*: spack/
     override-pull: |
+      # Remove patch once PR is merged into upstream and new release available
+      # https://github.com/spack/spack/pull/38036
       craftctl default
       git apply -v $SNAPCRAFT_PROJECT_DIR/chown.patch
 

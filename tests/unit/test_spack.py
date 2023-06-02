@@ -25,7 +25,7 @@ class TestSnap(unittest.TestCase):
     def test_build(self):
         """Test snap build status."""
         snap = subprocess.run(
-            ["tox", "-e", "check"], stdout=subprocess.PIPE, text=True
+            ["tox", "-e", "check"], stdout=subprocess.PIPE, text=True, check=True
         ).stdout.split("\n")
         ansi_escape = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]")
         # location differs between local and git runner
@@ -40,7 +40,7 @@ class TestSnap(unittest.TestCase):
         subprocess.run(["tox", "-e", "install"])
         logger.info("Finished spack snap install!")
         source = subprocess.run(
-            ["snap", "list", "spack"], stdout=subprocess.PIPE, text=True
+            ["snap", "list", "spack"], stdout=subprocess.PIPE, text=True, check=True
         ).stdout.strip("\n")
         self.assertTrue("spack" in source)
 
@@ -48,12 +48,12 @@ class TestSnap(unittest.TestCase):
         """Test Spack install."""
         logger.info("Testing Spack install...")
         install = subprocess.run(
-            ["spack", "install", "zlib"], stdout=subprocess.PIPE, text=True
+            ["spack", "install", "zlib"], stdout=subprocess.PIPE, text=True, check=True
         ).stdout.strip("\n")
         self.assertTrue("Successfully installed zlib" in install)
         logger.info("Testing Spack find...")
         find = subprocess.run(
-            ["spack", "find", "zlib"], stdout=subprocess.PIPE, text=True
+            ["spack", "find", "zlib"], stdout=subprocess.PIPE, text=True, check=True
         ).stdout.strip("\n")
         self.assertTrue("zlib@" in find)
 
@@ -61,14 +61,18 @@ class TestSnap(unittest.TestCase):
         """Test Spack uninstall."""
         logger.info("Testing Spack uninstall...")
         find = subprocess.run(
-            ["spack", "uninstall", "zlib"], input="y", stdout=subprocess.PIPE, text=True
+            ["spack", "uninstall", "zlib"],
+            input="y",
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
         ).stdout.strip("\n")
         self.assertTrue("Successfully uninstalled zlib" in find)
         logger.info("Testing Spack find...")
         find = subprocess.run(
-            ["spack", "find", "zlib"], stdout=subprocess.PIPE, text=True
+            ["spack", "find"], stdout=subprocess.PIPE, text=True, check=True
         ).stdout.strip("\n")
-        self.assertTrue("No package matches the query: zlib" in find)
+        self.assertFalse("zlib" in find)
 
     @classmethod
     def tearDownClass(cls) -> None:
