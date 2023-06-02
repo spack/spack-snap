@@ -52,6 +52,12 @@ layout:
     symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libbfd-2.38-system.so
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libctf.so.0:
     symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libctf.so.0
+  /usr/bin/$SNAPCRAFT_ARCH_TRIPLET/gcc-11:
+    symlink: $SNAP/usr/bin/gcc-11
+  /usr/bin/$SNAPCRAFT_ARCH_TRIPLET/g++-11:
+    symlink: $SNAP/usr/bin/g++-11
+  /usr/bin/$SNAPCRAFT_ARCH_TRIPLET/gfortran:
+    symlink: $SNAP/usr/bin/gfortran
 
 apps:
   spack:
@@ -70,6 +76,9 @@ parts:
       https://github.com/spack/spack/releases/download/v$SNAPCRAFT_PROJECT_VERSION/spack-$SNAPCRAFT_PROJECT_VERSION.tar.gz
     organize:
       ./*: spack/
+    override-pull: |
+      craftctl default
+      git apply -v $SNAPCRAFT_PROJECT_DIR/chown.patch
 
   spack-wrapper:
     plugin: dump
