@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Spack Root Config
+SPACK=$SNAP_USER_COMMON
+
+# If MODULEPATH not set or null, assign
+MODULEPATH="${MODULEPATH:=$SPACK/share/spack/lmod/$SNAP_ARCH_TRIPLET/Core}"
+
+# Copy over default Spack configs to customize the Spack configuration.
+# Default configs of Spack will not work for the snap have to edit. 
+if [ ! -f $SPACK/config.yaml ]; then
+    cp $SNAP/spack/etc/spack/defaults/config.yaml $SPACK/config.yaml
+    # Update default configs
+    sed -i 's@root: \$spack/opt/spack@root: '"${SPACK}"'@g' $SPACK/config.yaml
+    sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/config.yaml
+fi 
+
+if [ ! -f $SPACK/modules.yaml ]; then
+    cp $SNAP/spack/etc/spack/defaults/modules.yaml $SPACK/modules.yaml
+    # Modules point to Spack root
+    sed -i 's@\$spack@'"${SPACK}"'@g' $SPACK/modules.yaml
+    # Enable module generation
+    sed -i 's@enable: \[\]@enable:\n      - lmod@g' $SPACK/modules.yaml
+    # Sync modules config to compiler
+    sed -i -z "s@lmod:@lmod:\n      core_compilers:\n        - 'gcc\@11.3.0'@2" $SPACK/modules.yaml
+fi
+
+# No default compilers config exists in the upstream so need to write from scratch
+if [ ! -f $SPACK/compilers.yaml ]; then
+    cat <<EOF >> $SPACK/compilers.yaml
+    compilers:
+    - compiler:
+        spec: gcc@11.3.0
+        paths:
+          cc: $SNAP/usr/bin/gcc-11
+          cxx: $SNAP/usr/bin/g++-11
+          f77: $SNAP/usr/bin/gfortran
+          fc: $SNAP/usr/bin/gfortran
+        flags: {}
+        operating_system: ubuntu_core22
+        target: x86_64
+        modules: []
+        environment:
+          prepend_path:
+            LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAP_ARCH_TRIPLET
+        extra_rpaths: []
+EOF
+fi
+
+"$SNAP/spack/bin/spack" "$@"

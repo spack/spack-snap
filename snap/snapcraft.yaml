@@ -1,0 +1,111 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+---
+name: spack
+title: Spack
+icon: data/spack-logo.svg
+version: 0.20.0
+adopt-info: spack
+summary: A flexible package manager that supports multiple configurations.
+description: |
+  Spack is a multi-platform package manager that builds and installs multiple
+   versions and configurations of software. It works on Linux, macOS, and many
+   supercomputers. Spack is non-destructive: installing a new version of a
+   package does not break existing installations, so many configurations of the
+   same package can coexist.
+
+  Spack offers a simple "spec" syntax that allows users to specify versions and
+   configuration options. Package files are written in pure Python, and specs
+   allow package authors to write a single script for many different builds of
+   the same package. With Spack, you can build your software all the ways you
+   want to.
+license: Apache-2.0
+website: https://spack.io/
+base: core22
+grade: devel
+confinement: strict
+compression: lzo
+
+layout:
+  /usr/include:
+    bind: $SNAP/usr/include
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libc_nonshared.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm-2.35.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libm-2.35.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmvec.a:
+    bind-file: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmvec.a
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libisl.so.23
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpc.so.3:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpc.so.3
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpfr.so.6:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libmpfr.so.6
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libopcodes-2.38-system.so:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libopcodes-2.38-system.so
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libbfd-2.38-system.so:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libbfd-2.38-system.so
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libctf.so.0:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libctf.so.0
+  /usr/bin/$SNAPCRAFT_ARCH_TRIPLET/gcc-11:
+    symlink: $SNAP/usr/bin/gcc-11
+  /usr/bin/$SNAPCRAFT_ARCH_TRIPLET/g++-11:
+    symlink: $SNAP/usr/bin/g++-11
+  /usr/bin/$SNAPCRAFT_ARCH_TRIPLET/gfortran:
+    symlink: $SNAP/usr/bin/gfortran
+
+apps:
+  spack:
+    plugs:
+      - network
+    command: spack-wrapper
+    environment:
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+      SNAP_ARCH_TRIPLET: $SNAPCRAFT_ARCH_TRIPLET
+      SPACK_SYSTEM_CONFIG_PATH: $SNAP_USER_COMMON
+
+parts:
+  spack:
+    plugin: dump
+    source: >-
+      https://github.com/spack/spack/releases/download/v$SNAPCRAFT_PROJECT_VERSION/spack-$SNAPCRAFT_PROJECT_VERSION.tar.gz
+    organize:
+      ./*: spack/
+    override-pull: |
+      # Remove patch once PR is merged into upstream and new release available
+      # https://github.com/spack/spack/pull/38036
+      craftctl default
+      git apply -v $SNAPCRAFT_PROJECT_DIR/chown.patch
+
+  spack-wrapper:
+    plugin: dump
+    source: .
+    stage:
+      - spack-wrapper
+
+  reqs:
+    plugin: nil
+    stage-packages:
+      - build-essential
+      - ca-certificates
+      - coreutils
+      - curl
+      - environment-modules
+      - gfortran
+      - git
+      - gpg
+      - libc6-dev
+      - lsb-release
+      - python3
+      - python3-distutils
+      - python3-venv
+      - unzip
+      - zip
+
+  clingo:
+    source: .
+    plugin: python
+    python-packages:
+      - clingo
