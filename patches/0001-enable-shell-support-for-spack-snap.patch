@@ -1,0 +1,230 @@
+From 89456882277301516355927fd32acdbbf688a03d Mon Sep 17 00:00:00 2001
+From: "Jason C. Nucciarone" <jason.nucciarone@canonical.com>
+Date: Fri, 6 Oct 2023 15:24:59 -0400
+Subject: [PATCH] enable shell support for spack snap
+
+Patches shell support files for bash, fish, tcsh, etc
+to work with a spack snap. Spack will try to
+point the user to the shell scripts inside the snap, but this
+should be discouraged as it is an antipattern of snap.
+
+The scripts have been patched to assume that they are located
+with /etc/spack/shell and to not look for SPACK_ROOT. The
+shell_init_instructions function is also patched to point
+Spack users to /etc/spack/shell, and removes the notice about
+support batch as well (snaps do not work on Windows.)
+
+Signed-off-by: Jason C. Nucciarone <jason.nucciarone@canonical.com>
+---
+ lib/spack/spack/cmd/common/__init__.py | 12 ++---
+ share/spack/setup-env.csh              |  8 ++-
+ share/spack/setup-env.fish             | 12 -----
+ share/spack/setup-env.sh               | 73 ++------------------------
+ 4 files changed, 10 insertions(+), 95 deletions(-)
+
+diff --git a/lib/spack/spack/cmd/common/__init__.py b/lib/spack/spack/cmd/common/__init__.py
+index 28f4f291a2..bfca30e18e 100644
+--- a/lib/spack/spack/cmd/common/__init__.py
++++ b/lib/spack/spack/cmd/common/__init__.py
+@@ -6,8 +6,6 @@
+ import llnl.util.tty as tty
+ import llnl.util.tty.color as color
+ 
+-import spack.paths
+-
+ 
+ def shell_init_instructions(cmd, equivalent):
+     """Print out instructions for users to initialize shell support.
+@@ -27,16 +25,13 @@ def shell_init_instructions(cmd, equivalent):
+         "To set up shell support, run the command below for your shell.",
+         "",
+         color.colorize("@*c{For bash/zsh/sh:}"),
+-        "  . %s/setup-env.sh" % spack.paths.share_path,
++        "  . /etc/spack/shell/setup-env.sh",
+         "",
+         color.colorize("@*c{For csh/tcsh:}"),
+-        "  source %s/setup-env.csh" % spack.paths.share_path,
++        "  source /etc/spack/shell/setup-env.csh",
+         "",
+         color.colorize("@*c{For fish:}"),
+-        "  source %s/setup-env.fish" % spack.paths.share_path,
+-        "",
+-        color.colorize("@*c{For Windows batch:}"),
+-        "  source %s/spack_cmd.bat" % spack.paths.share_path,
++        "  source /etc/spack/shell/setup-env.fish",
+         "",
+         "Or, if you do not want to use shell support, run "
+         + ("one of these" if shell_specific else "this")
+@@ -49,7 +44,6 @@ def shell_init_instructions(cmd, equivalent):
+             equivalent.format(sh_arg="--sh  ") + "  # bash/zsh/sh",
+             equivalent.format(sh_arg="--csh ") + "  # csh/tcsh",
+             equivalent.format(sh_arg="--fish") + "  # fish",
+-            equivalent.format(sh_arg="--bat ") + "  # batch",
+         ]
+     else:
+         msg += ["  " + equivalent]
+diff --git a/share/spack/setup-env.csh b/share/spack/setup-env.csh
+index ad20d346d1..5c08c912a7 100755
+--- a/share/spack/setup-env.csh
++++ b/share/spack/setup-env.csh
+@@ -52,11 +52,10 @@ if (! $?SPACK_ROOT) then
+ endif
+ 
+ # Command aliases point at separate source files
+-set _spack_source_file = $SPACK_ROOT/share/spack/setup-env.csh
+-set _spack_share_dir = $SPACK_ROOT/share/spack
+-alias spack          'set _sp_args = (\!*); source $_spack_share_dir/csh/spack.csh'
++set _spack_source_file = /etc/spack/shell/setup-env.csh
++alias spack          'set _sp_args = (\!*); source /etc/spack/shell/csh/spack.csh'
+ alias spacktivate    'spack env activate'
+-alias _spack_pathadd 'set _pa_args = (\!*) && source $_spack_share_dir/csh/pathadd.csh'
++alias _spack_pathadd 'set _pa_args = (\!*) && source /etc/spack/shell/csh/pathadd.csh'
+ 
+ # Identify and lock the python interpreter
+ if (! $?SPACK_PYTHON) then
+@@ -71,7 +70,6 @@ foreach cmd ("$SPACK_PYTHON" python3 python python2)
+ end
+ 
+ # Set variables needed by this script
+-_spack_pathadd PATH "$SPACK_ROOT/bin"
+ eval `spack --print-shell-vars csh`
+ 
+ # Set up module search paths in the user environment
+diff --git a/share/spack/setup-env.fish b/share/spack/setup-env.fish
+index e00d8e76bb..bae704e297 100755
+--- a/share/spack/setup-env.fish
++++ b/share/spack/setup-env.fish
+@@ -689,18 +689,6 @@ for cmd in "$SPACK_PYTHON" python3 python python2
+     end
+ end
+ 
+-
+-
+-#
+-# Find root directory and add bin to path.
+-#
+-set -l sp_share_dir (realpath (dirname $sp_source_file))
+-set -l sp_prefix (realpath (dirname (dirname $sp_share_dir)))
+-spack_pathadd PATH "$sp_prefix/bin"
+-set -xg SPACK_ROOT $sp_prefix
+-
+-
+-
+ #
+ # No need to determine which shell is being used (obviously it's fish)
+ #
+diff --git a/share/spack/setup-env.sh b/share/spack/setup-env.sh
+index d3a97d9af6..9c3d319bfe 100755
+--- a/share/spack/setup-env.sh
++++ b/share/spack/setup-env.sh
+@@ -12,7 +12,7 @@
+ # module support exists, and provides suggestions if it doesn't. Source
+ # it like this:
+ #
+-#    . /path/to/spack/share/spack/setup-env.sh
++#    . /etc/spack/shell/setup-env.sh
+ #
+ ########################################################################
+ # This is a wrapper around the spack command that forwards calls to
+@@ -47,13 +47,6 @@ export _sp_initializing=true
+ 
+ 
+ _spack_shell_wrapper() {
+-    # Store LD_LIBRARY_PATH variables from spack shell function
+-    # This is necessary because MacOS System Integrity Protection clears
+-    # variables that affect dyld on process start.
+-    for var in LD_LIBRARY_PATH DYLD_LIBRARY_PATH DYLD_FALLBACK_LIBRARY_PATH; do
+-        eval "if [ -n \"\${${var}-}\" ]; then export SPACK_$var=\${${var}}; fi"
+-    done
+-
+     # Zsh does not do word splitting by default, this enables it for this
+     # function only
+     if [ -n "${ZSH_VERSION:-}" ]; then
+@@ -249,64 +242,6 @@ _sp_shell=$(_spack_determine_shell)
+ 
+ alias spacktivate="spack env activate"
+ 
+-#
+-# Figure out where this file is.
+-#
+-if [ "$_sp_shell" = bash ]; then
+-    _sp_source_file="${BASH_SOURCE[0]:-}"
+-elif [ "$_sp_shell" = zsh ]; then
+-    _sp_source_file="${(%):-%N}"
+-else
+-    # Try to read the /proc filesystem (works on linux without lsof)
+-    # In dash, the sourced file is the last one opened (and it's kept open)
+-    _sp_source_file_fd="$(\ls /proc/$$/fd 2>/dev/null | sort -n | tail -1)"
+-    if ! _sp_source_file="$(readlink /proc/$$/fd/$_sp_source_file_fd)"; then
+-        # Last resort: try lsof. This works in dash on macos -- same reason.
+-        # macos has lsof installed by default; some linux containers don't.
+-        _sp_lsof_output="$(lsof -p $$ -Fn0 | tail -1)"
+-        _sp_source_file="${_sp_lsof_output#*n}"
+-    fi
+-
+-    # If we can't find this script's path after all that, bail out with
+-    # plain old $0, which WILL NOT work if this is sourced indirectly.
+-    if [ ! -f "$_sp_source_file" ]; then
+-        _sp_source_file="$0"
+-    fi
+-fi
+-
+-#
+-# Find root directory and add bin to path.
+-#
+-# We send cd output to /dev/null to avoid because a lot of users set up
+-# their shell so that cd prints things out to the tty.
+-if [ "$_sp_shell" = zsh ]; then
+-    _sp_share_dir="${_sp_source_file:A:h}"
+-    _sp_prefix="${_sp_share_dir:h:h}"
+-else
+-    _sp_share_dir="$(cd "$(dirname $_sp_source_file)" > /dev/null && pwd)"
+-    _sp_prefix="$(cd "$(dirname $(dirname $_sp_share_dir))" > /dev/null && pwd)"
+-fi
+-if [ -x "$_sp_prefix/bin/spack" ]; then
+-    export SPACK_ROOT="${_sp_prefix}"
+-else
+-    # If the shell couldn't find the sourced script, fall back to
+-    # whatever the user set SPACK_ROOT to.
+-    if [ -n "$SPACK_ROOT" ]; then
+-        _sp_prefix="$SPACK_ROOT"
+-        _sp_share_dir="$_sp_prefix/share/spack"
+-    fi
+-
+-    # If SPACK_ROOT didn't work, fail.  We should need this rarely, as
+-    # the tricks above for finding the sourced file are pretty robust.
+-    if [ ! -x "$_sp_prefix/bin/spack" ]; then
+-        echo "==> Error: SPACK_ROOT must point to spack's prefix when using $_sp_shell"
+-        echo "Run this with the correct prefix before sourcing setup-env.sh:"
+-        echo "    export SPACK_ROOT=</path/to/spack>"
+-        return 1
+-    fi
+-fi
+-_spack_pathadd PATH "${_sp_prefix%/}/bin"
+-
+ #
+ # Check whether a function of the given name is defined
+ #
+@@ -317,8 +252,8 @@ _spack_fn_exists() {
+ # Define the spack shell function with some informative no-ops, so when users
+ # run `which spack`, they see the path to spack and where the function is from.
+ eval "spack() {
+-    : this is a shell function from: $_sp_share_dir/setup-env.sh
+-    : the real spack script is here: $_sp_prefix/bin/spack
++    : this is a shell function from: /etc/spack/shell/setup-env.sh
++    : the real spack script is here: /snap/bin/spack
+     _spack_shell_wrapper \"\$@\"
+     return \$?
+ }"
+@@ -391,7 +326,7 @@ fi
+ # Add programmable tab completion for Bash
+ #
+ if test "$_sp_shell" = bash || test -n "${ZSH_VERSION:-}"; then
+-    source $_sp_share_dir/spack-completion.bash
++    source /etc/spack/shell/spack-completion.bash
+ fi
+ 
+ # done: unset sentinel variable as we're no longer initializing
+-- 
+2.34.1
+

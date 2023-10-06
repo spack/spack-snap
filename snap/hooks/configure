@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+########################################################################
+#
+# This script will configure the host machine when the Spack snap is 
+# installed or refreshed. The script will copy the relevant shell
+# support scripts to /etc/spack/shell/* on the host. Users will want
+# to source the copied shell support scripts like the following rather 
+# than sourcing them from the snap-specific path:
+#
+#	. /etc/spack/shell/setup-env.sh  
+#
+########################################################################
+
+# Copy patched shell support scripts to /etc/spack/shell/*
+if [ ! -d /etc/spack/shell ]; then
+	mkdir -p /etc/spack/shell/csh
+fi
+
+cp $SNAP/share/spack/setup-env.sh /etc/spack/shell
+cp $SNAP/share/spack/spack-completion.bash /etc/spack/shell
+cp $SNAP/share/spack/setup-env.csh /etc/spack/shell
+cp $SNAP/share/spack/setup-env.fish /etc/spack/shell
+cp $SNAP/share/spack/csh/* /etc/spack/shell/csh 

@@ -4,7 +4,7 @@
 name: spack
 title: Spack
 icon: data/spack-logo.svg
-version: 0.20.1
+version: 0.20.2
 adopt-info: spack
 summary: A flexible package manager that supports multiple configurations.
 description: |
@@ -35,25 +35,49 @@ apps:
 
 parts:
   spack:
+    after:
+      - patches
     plugin: dump
-    source: >-
-      https://github.com/spack/spack/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/spack-${SNAPCRAFT_PROJECT_VERSION}.tar.gz
+    source: "https://github.com/spack/spack.git"
+    source-tag: v${SNAPCRAFT_PROJECT_VERSION}
     build-snaps:
       - yq
     override-build: |
       craftctl default
 
-      set -eux
+      set -e
       # Update default spack configuration.
       # This configuration can be overridden per machine in /etc/spack,
       # or can be overridden per-user in ~/.spack.
       yq -i '
         .config.install_tree.root = "/opt/spack" |
-        .config.template_dirs[0] = "/opt/spack/share/spack/templates" |
-        .config.license_dir = "/opt/spack/etc/spack/licenses" |
-        .config.source_cache = "/opt/spack/var/spack/cache"
+        .config.license_dir = "/etc/spack/licenses" |
+        .config.source_cache = "/var/spack/cache" |
+        .config.environments_root = "/var/spack/environments"
       ' etc/spack/defaults/config.yaml
       yq -i '
         .modules.default.roots.tcl = "/opt/spack/share/spack/modules" |
         .modules.default.roots.lmod = "/opt/spack/share/spack/lmod"
       ' etc/spack/defaults/modules.yaml
+    override-prime: |
+      craftctl default
+
+      set -eu
+      # Apply patches to Spack to enable shell support when installed with snap.
+      for patch in ${SNAPCRAFT_STAGE}/patches/*.patch; do
+        echo "Applying $(basename "$patch") ..."
+        patch \
+          --batch \
+          --forward \
+          --strip 1 \
+          --input "$patch"
+      done
+
+  # Patches to make Spack work in snap confinement.
+  patches:
+    source: patches/
+    plugin: dump
+    organize:
+      '*': patches/
+    prime:
+      - -*
