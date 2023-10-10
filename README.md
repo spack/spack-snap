@@ -1,75 +1,124 @@
-# Spack Snap
-This repository contains the packaging metadata for creating a snap of Spack.  For more information on snaps, visit [snapcraft.io](https://snapcraft.io/). 
+<div align="center">
 
-## Installing the Snap
-The snap can be installed directly from the Snap Store.  Follow the link in the badge below for more information.
+<img src="./data/spack-logo.svg" width="200" height="200" alt="Spack logo">
 <br>
+
+# Spack
+
+A [snap](https://snapcraft.io/about) package for [Spack](https://spack.io/about/) - a flexible package manager and development tool for supercomputers.
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/spack)
 
+</div>
 
-## Building the Snap
-The steps outlined below are based on the assumption that you are building the snap with the latest LTS of Ubuntu.  If you are using another version of Ubuntu or another operating system, the process may be different.
+> __Important:__ The Spack snap is currently in preview. The Spack snap is not 
+> published to the Snap Store currently since the snap requires classic confinement.
+> Please see the [classic confinement review process](https://snapcraft.io/docs/reviewing-classic-confinement-snaps) documentation for more information.
+> While the request for classic confinement is pending, please see the 
+> [Building the Spack snap](#building-the-spack-snap) section for how to install
+> the preview snap on your system.
 
-### Clone Repository
-```bash
-git clone git@github.com:dvdgomez/spack-snap.git
+## Features
+
+Spack is a package manager and development tool for supercomputers. Spack supports
+installing 7000+ packages and supports several different build systems and compiler
+backends. Packages installed using Spack peacefully coexist with other packages
+installed using the distribution package manager. Spack uses `RPATH` to link
+dependencies rather than `LD_LIBRARY_PATH`; there is no need to worry about conflicting
+libraries messing with binary executables. Each install is unique and will not break
+other existing installations on your host system.
+
+## Usage
+
+This section provides a brief overview of how to use the Spack snap on your system.
+For more in-depth information on how to use Spack on your system, see the 
+[Spack Usage](https://spack.readthedocs.io/en/latest/basic_usage.html) section in
+Spack's official upstream documentation.
+
+#### Installing packages
+
+```shell
+# Install compilers on your system.
+sudo apt update
+sudo apt install gcc g++ gfortran make
+
+# Load compiler configuration into Spack.
+spack compiler find
+
+# Install a package.
+sudo spack install <package_name>
+
+# Uninstall a package.
+sudo spack uninstall <package_name>
+```
+
+#### Installing packages in `/home/<user>` rather than in `/opt/spack/*`
+
+```shell
+# Create .spack in your home directory.
+mkdir -p ~/.spack
+
+# Set local configuration file in place.
+cat << EOF > ~/.spack/config.yaml
+config:
+  install_tree: $user/.spack/opt/spack
+  license_dir: $user/.spack/etc/spack/licenses
+  source_cache: $user/.spack/var/spack
+  environments_root: $user/.spack/env
+EOF
+
+# Install packages as you normally would.
+spack install <package_name>
+```
+
+#### Enabling shell support
+
+```shell
+# On bash/zsh/sh/etc.
+. /etc/spack/shell/setup-env.sh
+
+# On csh/tcsh.
+source /etc/spack/shell/setup-env.csh
+
+# On fish.
+source /etc/spack/shell/setup-env.fish
+
+# Load your packages.
+spack load <package_name>
+```
+
+## Building the Spack snap
+
+Want to build and test the Spack snap locally without pulling from the Snap Store? 
+Use the following commands to build and install the Spack snap on your system. These
+instructions assume that you are running on a Linux distribution that supports 
+installing snap packages. Please see [this page](https://snapcraft.io/docs/installing-snapd) 
+for a list of Linux distributions that support using snap packages.
+
+#### Clone Repository
+
+```shell
+git clone git@github.com:canonical/spack-snap.git
 cd spack-snap
 ```
-### Installing and Configuring Prerequisites
-```bash
-sudo snap install snapcraft
+
+#### Installing and Configuring Prerequisites
+
+```shell
 sudo snap install lxd
-sudo lxd init --auto
-```
-### Packing and Installing the Snap
-```bash
-snapcraft pack
-sudo snap install ./spack*.charm --dangerous
-```
-## How to Use the Snap
-Currently the snap can be used for installing and loading packages.
-
-```bash
-# Install a package
-spack install <package_name>
-
-# Uninstall a package
-spack uninstall <package_name>
+sudo lxd init --minimal
+sudo snap install snapcraft --classic
 ```
 
-### Modules
+#### Packing and Installing the Snap
 
-For every package that Spack installs it also provides a module file which can be used with Lmod.
-
-```bash
-# Install lmod - may need additional specifiers like %gcc@11.3.0
-spack install lmod
-
-# Put lmod in path
-. $(spack location -i lmod)/lmod/lmod/init/bash
-
-# Should match the snap shell environment
-snap run --shell spack; env | grep MODULEPATH
-
-# Show modules available
-module avail
-
-# Load a module
-module load <module from module avail output>
-
-# Show modules loaded
-module list
+```shell
+snapcraft
+sudo snap install ./spack*.charm --dangerous --classic
 ```
 
-For more on Spack usage, see [Spack Usage](https://spack.readthedocs.io/en/latest/basic_usage.html) for more information.
-For more on lmod usage, see [Lmod Usage](https://lmod.readthedocs.io/en/latest/010_user.html) for more information.
-## Limitations
-Currently shell support is not supported with the Spack snap. Therefore, instead of `spack load <package_name>` the shell type has to be specified in the load flag as seen below, ie --sh. This is true for other commands that rely on shell support. It is recommended to instead use modules with the Spack snap instead.
-
-```bash
-# Load a package
-eval `spack load --sh <package_name>`
-```
 ## License
-The Spack Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/dvdgomez/spack-snap/blob/main/LICENSE) for more information.
+
+The Spack snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](./LICENSE) for more information. See the 
+[Spack repository](https://github.com/spack/spack) for further licensing 
+information about Spack itself.
