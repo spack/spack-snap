@@ -11,12 +11,9 @@ A [snap](https://snapcraft.io/about) package for [Spack](https://spack.io/about/
 
 </div>
 
-> __Important:__ The Spack snap is currently in preview. The Spack snap is not 
-> published to the Snap Store currently since the snap requires classic confinement.
-> Please see the [classic confinement review process](https://snapcraft.io/docs/reviewing-classic-confinement-snaps) documentation for more information.
-> While the request for classic confinement is pending, please see the 
-> [Building the Spack snap](#building-the-spack-snap) section for how to install
-> the preview snap on your system.
+> __Note:__ The Spack snap is currently only available within the edge channel on the Snap Store as the initial call for testing window is open.
+> Interested in testing this new snap package? See the [Spack snap call-for-testing thread](https://forum.snapcraft.io/t/call-for-testing-spack-0-20-2/37272)
+> on the Snapcraft forum. Please report all this issues and/or suggestions on call-for-testing thread.
 
 ## Features
 
@@ -34,6 +31,12 @@ This section provides a brief overview of how to use the Spack snap on your syst
 For more in-depth information on how to use Spack on your system, see the 
 [Spack Usage](https://spack.readthedocs.io/en/latest/basic_usage.html) section in
 Spack's official upstream documentation.
+
+#### Installing Spack using snap
+
+```shell
+sudo snap install spack --edge --classic
+```
 
 #### Installing packages
 
@@ -120,5 +123,4 @@ sudo snap install ./spack*.charm --dangerous --classic
 ## License
 
 The Spack snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](./LICENSE) for more information. See the 
-[Spack repository](https://github.com/spack/spack) for further licensing 
-information about Spack itself.
+[upstream Spack repository](https://github.com/spack/spack) for further licensing information about Spack itself.
