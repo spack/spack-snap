@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./data/spack-logo.svg" width="200" height="200" alt="Spack logo">
+<img src="./assets/spack-logo.svg" width="200" height="200" alt="Spack logo">
 <br>
 
 # Spack

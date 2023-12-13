@@ -1,12 +1,16 @@
-#snapcraft specifics
+# Snapcraft specifics
 /parts/
 /stage/
 /prime/
 
 *.snap
+*.txt
 
 .snapcraft
 __pycache__
 *.pyc
 *_source.tar.bz2
 snap/.snapcraft
+
+# IDE specifics
+.idea
