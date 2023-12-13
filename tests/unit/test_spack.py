@@ -48,7 +48,7 @@ class TestSnap(unittest.TestCase):
         """Test Spack install."""
         logger.info("Testing Spack install...")
         install = subprocess.run(
-            ["spack", "install", "zlib"], stdout=subprocess.PIPE, text=True, check=True
+            ["sudo", "spack", "install", "zlib"], stdout=subprocess.PIPE, text=True, check=True
         ).stdout.strip("\n")
         self.assertTrue("Successfully installed zlib" in install)
         logger.info("Testing Spack find...")
@@ -61,7 +61,7 @@ class TestSnap(unittest.TestCase):
         """Test Spack uninstall."""
         logger.info("Testing Spack uninstall...")
         find = subprocess.run(
-            ["spack", "uninstall", "zlib"],
+            ["sudo", "spack", "uninstall", "zlib"],
             input="y",
             stdout=subprocess.PIPE,
             text=True,
