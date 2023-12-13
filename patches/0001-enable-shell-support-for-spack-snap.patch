@@ -1,6 +1,6 @@
-From 89456882277301516355927fd32acdbbf688a03d Mon Sep 17 00:00:00 2001
+From 0cd58959686557c8627692dae6a2d27f1f2ebf2d Mon Sep 17 00:00:00 2001
 From: "Jason C. Nucciarone" <jason.nucciarone@canonical.com>
-Date: Fri, 6 Oct 2023 15:24:59 -0400
+Date: Tue, 12 Dec 2023 12:37:35 -0500
 Subject: [PATCH] enable shell support for spack snap
 
 Patches shell support files for bash, fish, tcsh, etc
@@ -14,16 +14,24 @@ shell_init_instructions function is also patched to point
 Spack users to /etc/spack/shell, and removes the notice about
 support batch as well (snaps do not work on Windows.)
 
+Refresh (12/12/23):
+
+- Update bash/zsh/sh shell support script to include SPACK_COLOR env var.
+- Update fish shell support script to include spack-completion.fish.
+- Remove SPACK_PYTHON resolution from shell support scripts. SPACK_PYTHON is already
+  set by snap to use the python3 interpreter bundled with the squashfs package.
+- Update shell_init_instructions to patch out PowerShell hint.
+
 Signed-off-by: Jason C. Nucciarone <jason.nucciarone@canonical.com>
 ---
- lib/spack/spack/cmd/common/__init__.py | 12 ++---
- share/spack/setup-env.csh              |  8 ++-
- share/spack/setup-env.fish             | 12 -----
- share/spack/setup-env.sh               | 73 ++------------------------
- 4 files changed, 10 insertions(+), 95 deletions(-)
+ lib/spack/spack/cmd/common/__init__.py | 16 +----
+ share/spack/setup-env.csh              | 22 ++-----
+ share/spack/setup-env.fish             | 38 +-----------
+ share/spack/setup-env.sh               | 81 ++------------------------
+ 4 files changed, 14 insertions(+), 143 deletions(-)
 
 diff --git a/lib/spack/spack/cmd/common/__init__.py b/lib/spack/spack/cmd/common/__init__.py
-index 28f4f291a2..bfca30e18e 100644
+index 51329a1b6c..bfca30e18e 100644
 --- a/lib/spack/spack/cmd/common/__init__.py
 +++ b/lib/spack/spack/cmd/common/__init__.py
 @@ -6,8 +6,6 @@
@@ -35,7 +43,7 @@ index 28f4f291a2..bfca30e18e 100644
  
  def shell_init_instructions(cmd, equivalent):
      """Print out instructions for users to initialize shell support.
-@@ -27,16 +25,13 @@ def shell_init_instructions(cmd, equivalent):
+@@ -27,19 +25,13 @@ def shell_init_instructions(cmd, equivalent):
          "To set up shell support, run the command below for your shell.",
          "",
          color.colorize("@*c{For bash/zsh/sh:}"),
@@ -50,24 +58,37 @@ index 28f4f291a2..bfca30e18e 100644
 -        "  source %s/setup-env.fish" % spack.paths.share_path,
 -        "",
 -        color.colorize("@*c{For Windows batch:}"),
--        "  source %s/spack_cmd.bat" % spack.paths.share_path,
+-        "  %s\\spack_cmd.bat" % spack.paths.bin_path,
+-        "",
+-        color.colorize("@*c{For PowerShell:}"),
+-        "  %s\\setup-env.ps1" % spack.paths.share_path,
 +        "  source /etc/spack/shell/setup-env.fish",
          "",
          "Or, if you do not want to use shell support, run "
          + ("one of these" if shell_specific else "this")
-@@ -49,7 +44,6 @@ def shell_init_instructions(cmd, equivalent):
+@@ -52,8 +44,6 @@ def shell_init_instructions(cmd, equivalent):
              equivalent.format(sh_arg="--sh  ") + "  # bash/zsh/sh",
              equivalent.format(sh_arg="--csh ") + "  # csh/tcsh",
              equivalent.format(sh_arg="--fish") + "  # fish",
 -            equivalent.format(sh_arg="--bat ") + "  # batch",
+-            equivalent.format(sh_arg="--pwsh") + "  # powershell",
          ]
      else:
          msg += ["  " + equivalent]
 diff --git a/share/spack/setup-env.csh b/share/spack/setup-env.csh
-index ad20d346d1..5c08c912a7 100755
+index ad20d346d1..7c29d2f2a0 100755
 --- a/share/spack/setup-env.csh
 +++ b/share/spack/setup-env.csh
-@@ -52,11 +52,10 @@ if (! $?SPACK_ROOT) then
+@@ -8,7 +8,7 @@
+ # csh and tcsh.  This includes environment modules and lmod support, and
+ # it also puts spack in your path.  Source it like this:
+ #
+-#    source /path/to/spack/share/spack/setup-env.csh
++#    source /etc/spack/shell/setup-env.csh
+ #
+ 
+ # prevent infinite recursion when spack shells out (e.g., on cray for modules)
+@@ -52,26 +52,12 @@ if (! $?SPACK_ROOT) then
  endif
  
  # Command aliases point at separate source files
@@ -78,12 +99,19 @@ index ad20d346d1..5c08c912a7 100755
 +alias spack          'set _sp_args = (\!*); source /etc/spack/shell/csh/spack.csh'
  alias spacktivate    'spack env activate'
 -alias _spack_pathadd 'set _pa_args = (\!*) && source $_spack_share_dir/csh/pathadd.csh'
+-
+-# Identify and lock the python interpreter
+-if (! $?SPACK_PYTHON) then
+-    setenv SPACK_PYTHON ""
+-endif
+-foreach cmd ("$SPACK_PYTHON" python3 python python2)
+-    command -v "$cmd" >& /dev/null
+-    if ($status == 0) then
+-        setenv SPACK_PYTHON `command -v "$cmd"`
+-        break
+-    endif
+-end
 +alias _spack_pathadd 'set _pa_args = (\!*) && source /etc/spack/shell/csh/pathadd.csh'
- 
- # Identify and lock the python interpreter
- if (! $?SPACK_PYTHON) then
-@@ -71,7 +70,6 @@ foreach cmd ("$SPACK_PYTHON" python3 python python2)
- end
  
  # Set variables needed by this script
 -_spack_pathadd PATH "$SPACK_ROOT/bin"
@@ -91,13 +119,51 @@ index ad20d346d1..5c08c912a7 100755
  
  # Set up module search paths in the user environment
 diff --git a/share/spack/setup-env.fish b/share/spack/setup-env.fish
-index e00d8e76bb..bae704e297 100755
+index 482c3eaa68..4c2a412928 100755
 --- a/share/spack/setup-env.fish
 +++ b/share/spack/setup-env.fish
-@@ -689,18 +689,6 @@ for cmd in "$SPACK_PYTHON" python3 python python2
-     end
- end
+@@ -11,7 +11,7 @@
+ # in your path. The script also checks that at least module support exists, and
+ # provides suggestions if it doesn't. Source it like this:
+ #
+-#    source /path/to/spack/share/spack/setup-env.fish
++#    source /etc/spack/shell/setup-env.fish
+ #
+ #################################################################################
+ # This is a wrapper around the spack command that forwards calls to 'spack load'
+@@ -372,14 +372,7 @@ end
  
+ 
+ function spack_runner -d "Runner function for the `spack` wrapper"
+-    # Store DYLD_* variables from spack shell function
+-    # This is necessary because MacOS System Integrity Protection clears
+-    # variables that affect dyld on process start.
+-    for var in DYLD_LIBRARY_PATH DYLD_FALLBACK_LIBRARY_PATH
+-        if set -q $var
+-            set -gx SPACK_$var $$var
+-        end
+-    end
++
+ 
+     #
+     # Accumulate initial flags for main spack command
+@@ -683,31 +676,6 @@ end
+ #
+ set -l sp_source_file (status -f)  # name of current file
+ 
+-
+-
+-#
+-# Identify and lock the python interpreter
+-#
+-for cmd in "$SPACK_PYTHON" python3 python python2
+-    set -l _sp_python (command -v "$cmd")
+-    if test $status -eq 0
+-        set -x SPACK_PYTHON $_sp_python
+-        break
+-    end
+-end
+-
 -
 -
 -#
@@ -113,8 +179,17 @@ index e00d8e76bb..bae704e297 100755
  #
  # No need to determine which shell is being used (obviously it's fish)
  #
+@@ -792,7 +760,7 @@ if test $fish_version[1] -gt 3
+     or test $fish_version[1] -eq 3
+     and test $fish_version[2] -ge 2
+ 
+-    source $sp_share_dir/spack-completion.fish
++    source /etc/spack/shell/spack-completion.fish
+ end
+ 
+ #
 diff --git a/share/spack/setup-env.sh b/share/spack/setup-env.sh
-index d3a97d9af6..9c3d319bfe 100755
+index a42882266c..8c97bfbe7c 100755
 --- a/share/spack/setup-env.sh
 +++ b/share/spack/setup-env.sh
 @@ -12,7 +12,7 @@
@@ -130,17 +205,17 @@ index d3a97d9af6..9c3d319bfe 100755
  
  
  _spack_shell_wrapper() {
--    # Store LD_LIBRARY_PATH variables from spack shell function
+-    # Store DYLD_* variables from spack shell function
 -    # This is necessary because MacOS System Integrity Protection clears
 -    # variables that affect dyld on process start.
--    for var in LD_LIBRARY_PATH DYLD_LIBRARY_PATH DYLD_FALLBACK_LIBRARY_PATH; do
+-    for var in DYLD_LIBRARY_PATH DYLD_FALLBACK_LIBRARY_PATH; do
 -        eval "if [ -n \"\${${var}-}\" ]; then export SPACK_$var=\${${var}}; fi"
 -    done
 -
      # Zsh does not do word splitting by default, this enables it for this
      # function only
      if [ -n "${ZSH_VERSION:-}" ]; then
-@@ -249,64 +242,6 @@ _sp_shell=$(_spack_determine_shell)
+@@ -248,64 +241,6 @@ _sp_shell=$(_spack_determine_shell)
  
  alias spacktivate="spack env activate"
  
@@ -205,7 +280,7 @@ index d3a97d9af6..9c3d319bfe 100755
  #
  # Check whether a function of the given name is defined
  #
-@@ -317,8 +252,8 @@ _spack_fn_exists() {
+@@ -316,8 +251,8 @@ _spack_fn_exists() {
  # Define the spack shell function with some informative no-ops, so when users
  # run `which spack`, they see the path to spack and where the function is from.
  eval "spack() {
@@ -216,7 +291,22 @@ index d3a97d9af6..9c3d319bfe 100755
      _spack_shell_wrapper \"\$@\"
      return \$?
  }"
-@@ -391,7 +326,7 @@ fi
+@@ -328,14 +263,6 @@ if [ "$_sp_shell" = bash ]; then
+     export -f _spack_shell_wrapper
+ fi
+ 
+-# Identify and lock the python interpreter
+-for cmd in "${SPACK_PYTHON:-}" python3 python python2; do
+-    if command -v > /dev/null "$cmd"; then
+-        export SPACK_PYTHON="$(command -v "$cmd")"
+-        break
+-    fi
+-done
+-
+ if [ -z "${SPACK_SKIP_MODULES+x}" ]; then
+     need_module="no"
+     if ! _spack_fn_exists use && ! _spack_fn_exists module; then
+@@ -390,7 +317,7 @@ fi
  # Add programmable tab completion for Bash
  #
  if test "$_sp_shell" = bash || test -n "${ZSH_VERSION:-}"; then
@@ -226,5 +316,5 @@ index d3a97d9af6..9c3d319bfe 100755
  
  # done: unset sentinel variable as we're no longer initializing
 -- 
-2.34.1
+2.40.1
 
