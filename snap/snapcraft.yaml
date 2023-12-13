@@ -3,9 +3,7 @@
 
 name: spack
 title: Spack
-icon: data/spack-logo.svg
-version: 0.20.2
-adopt-info: spack
+version: 0.21.0
 summary: A flexible package manager that supports multiple configurations.
 description: |
   Spack is a multi-platform package manager that builds and installs multiple
@@ -27,28 +25,55 @@ grade: stable
 confinement: classic
 compression: lzo
 architectures:
-  - build-on: amd64
+  - build-on: [amd64]
+    build-for: [amd64]
+  - build-on: [arm64]
+    build-for: [arm64]
+  - build-on: [armhf]
+    build-for: [armhf]
+  - build-on: [ppc64el]
+    build-for: [ppc64el]
+  - build-on: [s390x]
+    build-for: [s390x]
+  - build-on: [riscv64]
+    build-for: [riscv64]
 
 apps:
   spack:
+    environment:
+      SPACK_PYTHON: ${SNAP}/usr/bin/python3
     command: bin/spack
 
 parts:
   spack:
     after:
       - patches
-    plugin: dump
-    source: "https://github.com/spack/spack.git"
-    source-tag: v${SNAPCRAFT_PROJECT_VERSION}
-    build-snaps:
       - yq
-    override-build: |
+    plugin: dump
+    source: "https://github.com/spack/spack/archive/refs/tags/v${SNAPCRAFT_PROJECT_VERSION}.tar.gz"
+    source-type: tar
+    build-attributes:
+      - enable-patchelf
+    stage-packages:
+      - libpython3-stdlib
+      - libpython3.10-stdlib
+      - libpython3.10-minimal
+      - python3-venv
+      - python3-minimal
+      - python3.10-minimal
+      - patchelf
+      - gnupg
+      - bzip2
+      - unzip
+      - make
+    override-prime: |
       craftctl default
 
-      set -e
+      set -eu
       # Update default spack configuration.
       # This configuration can be overridden per machine in /etc/spack,
       # or can be overridden per-user in ~/.spack.
+      export PATH=${CRAFT_STAGE}/bin:$PATH
       yq -i '
         .config.install_tree.root = "/opt/spack" |
         .config.license_dir = "/etc/spack/licenses" |
@@ -59,12 +84,9 @@ parts:
         .modules.default.roots.tcl = "/opt/spack/share/spack/modules" |
         .modules.default.roots.lmod = "/opt/spack/share/spack/lmod"
       ' etc/spack/defaults/modules.yaml
-    override-prime: |
-      craftctl default
-
-      set -eu
+      
       # Apply patches to Spack to enable shell support when installed with snap.
-      for patch in ${SNAPCRAFT_STAGE}/patches/*.patch; do
+      for patch in ${CRAFT_STAGE}/patches/*.patch; do
         echo "Applying $(basename "$patch") ..."
         patch \
           --batch \
@@ -73,10 +95,46 @@ parts:
           --input "$patch"
       done
 
-  # Patches to make Spack work in snap confinement.
+  # Build clingo and python bindings to ship with snap.
+  # This will reduce the time to bootstrap Spack after first installation.
+  clingo:
+    plugin: cmake
+    source: "https://github.com/potassco/clingo/archive/refs/tags/v5.6.2.tar.gz"
+    source-type: tar
+    build-attributes:
+      - enable-patchelf
+    build-packages:
+      - python3-dev
+      - python3-cffi
+    stage-packages:
+      - python3-dev
+      - python3-cffi
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCLINGO_BUILD_WITH_PYTHON=ON
+
+  # Build `yq` from source. `yq` snap is not enabled for riscv64,
+  # so we must build from source, otherwise, snapcraft will fail
+  # since it cannot pull an appropriate version of the yq snap.
+  yq:
+    plugin: go
+    source: "https://github.com/mikefarah/yq/archive/refs/tags/v4.40.4.tar.gz"
+    source-type: tar
+    build-attributes:
+      - no-patchelf
+    build-snaps:
+      - go/1.21/stable
+
+  # Apply patches to Spack that:
+  #   1. Change the path of the shell support scripts to /etc/spack/shell/*
+  #      instead of the immutable snap directory /snap/spack/*. Also removes
+  #      unnecessary path resolution functions from the shell support scripts.
+  #   2. Remove mention of Windows's .batch and PowerShell shell support script
+  #      since snaps are not compatible with Windows unless using WSL.
   patches:
-    source: patches/
     plugin: dump
+    source: patches/
     organize:
       '*': patches/
     prime:
