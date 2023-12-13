@@ -50,6 +50,7 @@ parts:
       - patches
       - yq
     plugin: dump
+    # yamllint disable-line rule:line-length
     source: "https://github.com/spack/spack/archive/refs/tags/v${SNAPCRAFT_PROJECT_VERSION}.tar.gz"
     source-type: tar
     build-attributes:
@@ -84,7 +85,7 @@ parts:
         .modules.default.roots.tcl = "/opt/spack/share/spack/modules" |
         .modules.default.roots.lmod = "/opt/spack/share/spack/lmod"
       ' etc/spack/defaults/modules.yaml
-      
+
       # Apply patches to Spack to enable shell support when installed with snap.
       for patch in ${CRAFT_STAGE}/patches/*.patch; do
         echo "Applying $(basename "$patch") ..."
