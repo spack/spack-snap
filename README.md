@@ -122,5 +122,13 @@ sudo snap install ./spack*.charm --dangerous --classic
 
 ## License
 
-The Spack snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](./LICENSE) for more information. See the 
-[upstream Spack repository](https://github.com/spack/spack) for further licensing information about Spack itself.
+This project is part of Spack. Spack is distributed under the terms of both the 
+MIT license and the Apache License (Version 2.0). Users may choose either license, 
+at their option.
+
+All new contributions must be made under both the MIT and Apache-2.0 licenses.
+
+See [LICENSE-MIT](./LICENSE-MIT), [LICENSE-APACHE](./LICENSE-APACHE), 
+and [COPYRIGHT](./COPYRIGHT) for details.
+
+SPDX-License-Identifier: (Apache-2.0 OR MIT)
